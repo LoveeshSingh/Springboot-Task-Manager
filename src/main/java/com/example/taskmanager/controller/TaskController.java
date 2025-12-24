@@ -7,6 +7,7 @@ import com.example.taskmanager.dto.CreateTaskRequest;
 import com.example.taskmanager.dto.TaskResponse;
 import com.example.taskmanager.dto.UpdateTaskRequest;
 import com.example.taskmanager.entity.Task;
+import com.example.taskmanager.mapper.TaskMapper;
 import com.example.taskmanager.service.TaskService;
 
 import jakarta.validation.Valid;
@@ -34,19 +35,9 @@ public class TaskController {
 
 	@PostMapping
 	public ResponseEntity<TaskResponse> createTask(@Valid @RequestBody CreateTaskRequest request) {
-		Task task = new Task();
-		task.setTitle(request.getTitle());
-		task.setDescription(request.getDescription());
-		task.setCompleted(request.getCompleted());
-
-		Task saved = taskService.createTask(task);
+		Task saved = taskService.createTask(TaskMapper.toEntity(request));
 		return ResponseEntity.ok(
-            new TaskResponse(
-                saved.getId(),
-                saved.getTitle(),
-                saved.getDescription(),
-                saved.getCompleted()
-            )
+            TaskMapper.toResponse(saved)
     	);
 	}
 
@@ -55,12 +46,7 @@ public class TaskController {
 
 		List<TaskResponse> response = taskService.getAllTasks()
 				.stream()
-				.map(t -> new TaskResponse(
-						t.getId(),
-						t.getTitle(),
-						t.getDescription(),
-						t.getCompleted()
-				))
+				.map(t -> TaskMapper.toResponse(t))
 				.toList();
 
 		return ResponseEntity.ok(response);
@@ -69,14 +55,9 @@ public class TaskController {
 	@GetMapping("/{id}")
 	public ResponseEntity<TaskResponse> getTaskById(@PathVariable Long id) {
 
-		Task t = taskService.getTaskById(id);
-
 		return ResponseEntity.ok(
-				new TaskResponse(
-						t.getId(),
-						t.getTitle(),
-						t.getDescription(),
-						t.getCompleted()
+				TaskMapper.toResponse(
+						taskService.getTaskById(id)
 				)
 		);
 	}
@@ -85,21 +66,10 @@ public class TaskController {
 	public ResponseEntity<TaskResponse> updateTask(
 			@PathVariable Long id,
 			@Valid @RequestBody UpdateTaskRequest request) {
-
-		Task task = new Task();
-		task.setTitle(request.getTitle());
-		task.setDescription(request.getDescription());
-		task.setCompleted(request.getCompleted());
-
-		Task updated = taskService.updateTask(id, task);
+		Task updated = taskService.updateTask(id, TaskMapper.toEntity(request));
 
 		return ResponseEntity.ok(
-				new TaskResponse(
-						updated.getId(),
-						updated.getTitle(),
-						updated.getDescription(),
-						updated.getCompleted()
-				)
+				TaskMapper.toResponse(updated)
 		);
 	}
 
