@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.example.taskmanager.entity.Task;
+import com.example.taskmanager.exception.TaskNotFoundException;
 import com.example.taskmanager.repository.TaskRepository;
 
 @Service
@@ -23,7 +24,7 @@ public class TaskServiceImpl implements TaskService{
     @Override
     public Task getTaskById(Long id) {
         return taskRepository.findById(id)
-                .orElse(null);
+                .orElseThrow(()-> new TaskNotFoundException(id));
     }
 
     @Override
@@ -44,7 +45,8 @@ public class TaskServiceImpl implements TaskService{
     }
 
     @Override
-    public void deleteTask(Long id) {
-        taskRepository.deleteById(id);
+    public void deleteTask(Long id) { 
+        Task existing = getTaskById(id);
+        taskRepository.delete(existing);
     }
 }
