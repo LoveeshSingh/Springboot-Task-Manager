@@ -1,6 +1,8 @@
 package com.example.taskmanager.service;
 
-import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.example.taskmanager.entity.Task;
 
@@ -8,7 +10,7 @@ import com.example.taskmanager.entity.Task;
 public interface TaskService{
 	Task createTask(Task task);
     Task getTaskById(Long id);
-    List<Task> getAllTasks();
+    Page<Task> getAllTasks(Pageable pageable);
     Task updateTask(Long id, Task updatedTask);
     void deleteTask(Long id);
 }
