@@ -15,7 +15,15 @@ public class User {
 	@Column(nullable=false)
 	private String password;
 
-	protected User(){}
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
+	public Role getRole() {
+        return role;
+    }
+
+    protected User(){}
 
 	public User(String email, String password) {
         this.email = email;
