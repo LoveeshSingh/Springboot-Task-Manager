@@ -1,14 +1,14 @@
 package com.example.taskmanager.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public class UpdateTaskRequest {
 	@NotBlank(message = "Title must not be blank") 
+	@Size(max = 200, message = "Title must be at most 200 characters")
 	private String title;
+	@Size(max = 2000, message = "Description must be at most 2000 characters")
 	private String description; 
-	@NotNull(message = "Completed status must not be null")
-	private Boolean completed;
 
 	public String getTitle() {
 		return title;
@@ -26,11 +26,4 @@ public class UpdateTaskRequest {
 		this.description = description;
 	}
 
-	public Boolean getCompleted() {
-		return completed;
-	}
-
-	public void setCompleted(Boolean completed) {
-		this.completed = completed;
-	}
 }

@@ -8,7 +8,6 @@ import com.example.taskmanager.dto.CreateTaskRequest;
 import com.example.taskmanager.dto.PagedResponse;
 import com.example.taskmanager.dto.TaskResponse;
 import com.example.taskmanager.dto.UpdateTaskRequest;
-import com.example.taskmanager.entity.Task;
 import com.example.taskmanager.mapper.TaskMapper;
 import com.example.taskmanager.service.TaskService;
 
@@ -33,7 +32,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 @RestController
 @RequestMapping("/tasks")
 public class TaskController {
-	private static final int PAGE_SIZE = 10;
+	private static final int MAX_PAGE_SIZE = 50;
 	private final TaskService taskService;
 
 	public TaskController(TaskService taskService){
@@ -42,7 +41,7 @@ public class TaskController {
 
 	@PostMapping
 	public ResponseEntity<TaskResponse> createTask(@Valid @RequestBody CreateTaskRequest request) {
-		Task saved = taskService.createTask(TaskMapper.toEntity(request));
+		var saved = taskService.createTask(request);
 		return ResponseEntity.ok(
             TaskMapper.toResponse(saved)
     	);
@@ -51,16 +50,20 @@ public class TaskController {
 	@GetMapping
 	public ResponseEntity<PagedResponse<TaskResponse>> getAllTasks(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "id") String sortBy,
-			@RequestParam(defaultValue = "asc") String direction) {
+			@RequestParam(defaultValue = "createdAt") String sortBy,
+			@RequestParam(defaultValue = "desc") String direction,
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(required = false) Boolean completed) {
+
+		int pageSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
 
 		Sort sort = direction.equalsIgnoreCase("desc")
 				? Sort.by(sortBy).descending()
 				: Sort.by(sortBy).ascending();
 
-		Pageable pageable = PageRequest.of(page, PAGE_SIZE, sort);
+		Pageable pageable = PageRequest.of(page, pageSize, sort);
 
-		Page<Task> taskPage = taskService.getAllTasks(pageable);
+		Page<com.example.taskmanager.entity.Task> taskPage = taskService.getAllTasks(pageable, completed);
 
 		List<TaskResponse> content = taskPage
 				.getContent()
@@ -95,11 +98,22 @@ public class TaskController {
 	public ResponseEntity<TaskResponse> updateTask(
 			@PathVariable Long id,
 			@Valid @RequestBody UpdateTaskRequest request) {
-		Task updated = taskService.updateTask(id, TaskMapper.toEntity(request));
+		var updated = taskService.updateTask(id, request);
 
 		return ResponseEntity.ok(TaskMapper.toResponse(updated));
 	}
 
+	@PutMapping("/{id}/complete")
+	public ResponseEntity<TaskResponse> completeTask(@PathVariable Long id) {
+		var updated = taskService.markCompleted(id);
+		return ResponseEntity.ok(TaskMapper.toResponse(updated));
+	}
+
+	@PutMapping("/{id}/reopen")
+	public ResponseEntity<TaskResponse> reopenTask(@PathVariable Long id) {
+		var updated = taskService.reopen(id);
+		return ResponseEntity.ok(TaskMapper.toResponse(updated));
+	}
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteTask(@PathVariable Long id) {

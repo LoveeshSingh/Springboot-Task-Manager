@@ -25,9 +25,10 @@ public class User {
 
     protected User(){}
 
-	public User(String email, String password) {
+    public User(String email, String password, Role role) {
         this.email = email;
         this.password = password;
+        this.role = role;
     }
 
 	public Long getId() {
